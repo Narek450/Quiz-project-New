@@ -1,7 +1,22 @@
-<h1>{{ question.title }}</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Question with Answers</title>
+</head>
+<body>
+  <h1>{{ question.title }}</h1>
+  <h2>{{ question.question_text }}</h2>
 
-<ul>
-{% for answer in answers %}
-    <li>{{ answer.answer_text }}</li>
-{% endfor %}
-</ul>
+  <form method="POST">
+    {% csrf_token %}
+    {% for answer in answers %}
+      <label>
+        <input type="radio" name="selected_answer" value="{{ answer.id }}"> {{ answer.answer_text }}
+      </label>
+      <br>
+    {% endfor %}
+    <br>
+    <button type="submit">Next</button>
+  </form>
+</body>
+</html>
