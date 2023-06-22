@@ -1,0 +1,42 @@
+body {
+    background-image: url('/static/images/background.jpg'); /* Замените '/static/images/background.jpg' на путь к вашей картинке на сервере */
+    background-size: cover;
+    background-repeat: no-repeat;
+    }
+.quiz-title {
+    font-family: 'Josefin Sans', sans-serif;
+    color: #cc5353;
+    text-align: center;
+    font-weight: bold;
+    }
+h3 {
+    font-family: 'Josefin Sans', sans-serif;
+    color: #f8f7f5;
+    font-size: 36px;
+    text-align: center;
+    font-style: italic;
+    
+    }
+ul {
+    font-family: 'Josefin Sans', sans-serif;
+    color: #ffffff;
+    font-size: 30px;
+    text-align: center;
+    font-weight: bold;
+    }
+input[type="submit"] {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    display: block;
+    margin: 40px auto; /* Измените значение отступа по вертикали по вашему усмотрению */
+    padding: 20px 20px; /* Измените значение отступа вокруг кнопки по вашему усмотрению */
+    background-color: #46cf2b; /* Измените цвет фона кнопки */
+    color: #000000; /* Измените цвет текста кнопки */
+    border: none;
+    border-radius: 5px;
+    }
+form {
+    text-align: center;
+    }

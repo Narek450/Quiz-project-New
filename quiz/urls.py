@@ -1,6 +1,9 @@
 from . import views
 from django.urls import path
 from .views import Quiz, RandomQuestion, QuizQuestion, get_question_with_answers, question_page, result_view
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 app_name='quiz'
 
@@ -14,3 +17,5 @@ urlpatterns = [
     path('r/<str:topic>', views.RandomQuestion.as_view(), name='random'),
     path('q/<str:topic>', views.QuizQuestion.as_view(), name='questions'),
 ]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
