@@ -5,7 +5,7 @@ from .views import Quiz, RandomQuestion, QuizQuestion, get_question_with_answers
 app_name='quiz'
 
 urlpatterns = [
-    path('', views.Quiz.as_view(), name='quiz'),
+    path('', views.Quiz.as_view(), name='home'),
     path('question/<int:question_id>/', views.get_question_with_answers, name='question_with_answers'),
     path('quiz/<int:quiz_id>/', question_page, name='question_page'),
     path('quiz/result/', result_view, name='quiz_result'),
