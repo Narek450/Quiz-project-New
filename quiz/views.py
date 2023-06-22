@@ -37,7 +37,7 @@ def get_question_with_answers(request, question_id):
 
 def question_page(request, quiz_id):
     quiz = Quizzes.objects.get(id=quiz_id)
-    questions = Question.objects.filter(quiz__id=quiz_id, quiz__category__id=6)
+    questions = Question.objects.filter(quiz__id=quiz_id)
 
     
     context = {
