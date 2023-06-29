@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Question with Answers</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Question with Answers{% endblock title %}
+
+{% block content %}
   <h1>{{ question.title }}</h1>
   <h2>{{ question.question_text }}</h2>
 
@@ -18,5 +17,4 @@
     <br>
     <button type="submit">Next</button>
   </form>
-</body>
-</html>
+{% endblock content %}

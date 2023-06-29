@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}User Scores{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h1>User Scores</h1>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user_profile in user_profiles %}
+          <tr>
+            <td>{{ user_profile.username }}</td>
+            {% if user_profile.userprofile.score %}
+              <td>{{ user_profile.userprofile.score }}</td>
+            {% else %}
+              <td>0</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

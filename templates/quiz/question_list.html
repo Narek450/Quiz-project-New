@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Question List{% endblock title %}
+
+{% block content %}
+  <h1>Question List</h1>
+  <ul>
+    {% for question in questions %}
+      <li>{{ question.title }}</li>
+    {% empty %}
+      <li>No questions available.</li>
+    {% endfor %}
+  </ul>
+{% endblock content %}

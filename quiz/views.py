@@ -1,8 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.response import Response
-from .models import Quizzes, Question, Category, Answer
+from .models import Quizzes, Question, Category, Answer, QuizAttempt
 from .serializers import QuizSerializer, QuestionSerializer, RandomQuestionSerializer
 from rest_framework.views import APIView
+from .forms import CategoryForm, CreateQuizForm, QuestionForm, AnswerForm, CreateQuestionForm, AnswerFormSet
+from django.forms import formset_factory
+from django.contrib.auth.decorators import login_required
+from .models import UserProfile
+from django.contrib.auth.models import User
+from accounts.models import CustomUser
+from django.db.models import Sum
+
 
 class Quiz(APIView):
 
@@ -53,18 +61,30 @@ def submit_answer(request):
         context = {
             'score': score,
         }
-        return render(request, 'quiz/result.html', context)
+        return render(request, 'quiz/quiz_result.html', context)
     else:
         return render(request, 'quiz/answer_form.html')
-
+    
 def calculate_score(request):
     score = 0
     for question in request.POST:
         if question.startswith('question_'):
             selected_answer_id = request.POST[question]
             answer = Answer.objects.get(id=selected_answer_id)
-            if answer.is_right: 
+            if answer.is_right:
                 score += 1
+    
+    user = request.user
+    quiz_id = 1  # Пример ID викторины
+    
+    # Получение или создание экземпляра QuizAttempt
+    attempt, created = QuizAttempt.objects.get_or_create(user=user, quiz_id=quiz_id, defaults={'score': score})
+    
+    if not created:
+        # Обновление существующего экземпляра QuizAttempt
+        attempt.score = score
+        attempt.save()
+    
     return score
 
 def result_view(request):
@@ -74,4 +94,108 @@ def result_view(request):
         'score': score,
     }
 
-    return render(request, 'quiz/result.html', context)
+    return render(request, 'quiz/quiz_result.html', context)
+
+def quiz_list(request):
+    quizzes = Quizzes.objects.all()
+    return render(request, 'quiz/quiz_list.html', {'quizzes': quizzes})
+
+from django.shortcuts import redirect
+
+def create_category(request):
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('quiz:create_quiz')
+    else:
+        form = CategoryForm()
+    
+    return render(request, 'quiz/create_category.html', {'form': form})
+
+
+def category_list(request):
+    categories = Category.objects.all()
+    return render(request, 'quiz/category_list.html', {'categories': categories})
+
+def create_quiz(request):
+    if request.method == 'POST':
+        form = CreateQuizForm(request.POST)
+        if form.is_valid():
+            quiz = form.save(commit=False)
+            quiz.author = request.user
+            quiz.save()
+            return redirect('quiz:create_question')
+    else:
+        form = CreateQuizForm()
+
+    return render(request, 'quiz/create_quiz.html', {'form': form})
+
+def create_question(request):
+    if request.method == 'POST':
+        form = CreateQuestionForm(request.POST)
+        formset = AnswerFormSet(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            question = form.save()  
+
+            answers = formset.save(commit=False)  
+            for answer in answers:
+                answer.question = question
+                answer.save()  
+
+            return redirect('quiz:question_list') 
+    else:
+        form = CreateQuestionForm()
+        formset = AnswerFormSet()
+
+    return render(request, 'quiz/create_question.html', {'form': form, 'formset': formset})
+
+
+def question_list(request):
+    questions = Question.objects.all()
+    return render(request, 'quiz/question_list.html', {'questions': questions})
+
+def save_score(request, score):
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    user_profile.score = score
+    user_profile.save()
+
+def quiz_result(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    score = 0
+
+    # Логика для вычисления счета пользователя в данной категории
+    # ...
+
+    # Сохранение счета для пользователя
+    save_score(request, score)
+
+    context = {
+        'category': category,
+        'user_score': score,
+    }
+
+    return render(request, 'quiz/quiz_result.html', context)
+
+
+def user_scores(request):
+    user_profiles = CustomUser.objects.all()
+
+    for user_profile in user_profiles:
+        quiz_attempts = QuizAttempt.objects.filter(user=user_profile)
+        total_score = quiz_attempts.aggregate(total_score=Sum('score'))['total_score']
+        if total_score is not None:
+            user_profile.score = total_score
+            user_profile.save()
+        else:
+            user_profile.score = 0
+            user_profile.save()
+
+    context = {
+        'user_profiles': user_profiles,
+    }
+    return render(request, 'quiz/scores.html', context)
+
+
+

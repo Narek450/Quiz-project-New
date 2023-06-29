@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <h1 style="font-size: 24px; margin-bottom: 20px;">Create Question</h1>
+  <form method="post" style="margin-bottom: 20px;">
+    {% csrf_token %}
+    {{ form|crispy }}
+
+    {{ formset.management_form }}
+
+    <fieldset style="border: none; margin: 0; padding: 0;">
+      <legend style="font-weight: bold; margin-bottom: 10px;">Answer Options</legend>
+      {% for form in formset %}
+        <div class="form-field">
+          {{ form.answer_text|as_crispy_field }}
+          {{ form.is_right|as_crispy_field }}
+          
+        </div>
+      {% endfor %}
+    </fieldset>
+
+    <button class="btn btn-success" type="submit" style="background-color: #4CAF50; color: white; border: none; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; cursor: pointer;">
+      Create
+    </button>
+  </form>
+{% endblock %}
