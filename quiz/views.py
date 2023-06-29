@@ -161,41 +161,61 @@ def save_score(request, score):
     user_profile.score = score
     user_profile.save()
 
-def quiz_result(request, category_id):
-    category = get_object_or_404(Category, id=category_id)
-    score = 0
-
-    # Логика для вычисления счета пользователя в данной категории
-    # ...
-
-    # Сохранение счета для пользователя
-    save_score(request, score)
-
+def quiz_results(request):
+    user = request.user
+    quiz_attempts = QuizAttempt.objects.filter(user=user)
+    
     context = {
-        'category': category,
-        'user_score': score,
+        'quiz_attempts': quiz_attempts
     }
+    
+    return render(request, 'quiz_results.html', context)
 
-    return render(request, 'quiz/quiz_result.html', context)
 
+from django.db.models import Sum
 
 def user_scores(request):
     user_profiles = CustomUser.objects.all()
 
     for user_profile in user_profiles:
         quiz_attempts = QuizAttempt.objects.filter(user=user_profile)
-        total_score = quiz_attempts.aggregate(total_score=Sum('score'))['total_score']
+        scores_by_category = quiz_attempts.values('quiz__category').annotate(total_score=Sum('score'))
+
+        total_score = 0
+        for score in scores_by_category:
+            total_score += score['total_score']
+
         if total_score is not None:
             user_profile.score = total_score
-            user_profile.save()
         else:
             user_profile.score = 0
-            user_profile.save()
+        user_profile.scores_by_category = scores_by_category
+
+        user_profile.save()
 
     context = {
         'user_profiles': user_profiles,
     }
     return render(request, 'quiz/scores.html', context)
 
+def save_quiz_attempt(request, quiz_id, score):
+    # Получение данных пользователя
+    user = request.user
 
+    # Получение объекта викторины по идентификатору (quiz_id)
+    quiz = Quizzes.objects.get(id=quiz_id)
+
+    # Обновление общего счета пользователя
+    user.score += score
+    user.save()
+
+    # Проверка наличия объекта QuizAttempt для данной викторины и пользователя
+    quiz_attempt, created = QuizAttempt.objects.get_or_create(user=user, quiz=quiz)
+
+    # Если объект QuizAttempt уже существует, обновляем его счет
+    if not created:
+        quiz_attempt.score += score
+        quiz_attempt.save()
+
+    return score
 

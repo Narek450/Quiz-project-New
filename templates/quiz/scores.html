@@ -17,11 +17,13 @@
         {% for user_profile in user_profiles %}
           <tr>
             <td>{{ user_profile.username }}</td>
-            {% if user_profile.userprofile.score %}
-              <td>{{ user_profile.userprofile.score }}</td>
-            {% else %}
-              <td>0</td>
-            {% endif %}
+            <td>
+              {% for score in user_profile.scores_by_category %}
+                {{ score.total_score }}&nbsp;
+              {% empty %}
+                0
+              {% endfor %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>

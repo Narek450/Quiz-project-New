@@ -10,10 +10,5 @@
       Score: <strong>{{ score }}</strong>
     </div>
 
-    {% if next_category_id %}
-      <a href="{% url 'quiz:quiz_result' category_id=next_category_id %}" class="btn btn-primary">Next Quiz</a>
-    {% else %}
-      <a href="{% url 'quiz:quiz_list' %}" class="btn btn-primary">Done</a>
-    {% endif %}
   </div>
 {% endblock %}
