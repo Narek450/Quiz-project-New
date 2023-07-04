@@ -54,18 +54,31 @@ def question_page(request, quiz_id):
     }
     return render(request, 'quiz/question_page.html', context)
 
-def submit_answer(request):
-    if request.method == 'POST':
-        score = calculate_score(request) 
 
+def submit_answer(request, quiz_id):
+    quiz = get_object_or_404(Quizzes, id=quiz_id)
+    
+    if request.method == 'POST':
+        score = calculate_score(request, quiz_id)
+        user_score = request.session.get('score', 0) 
+
+        if score > user_score:
+            user_score = score
+
+        request.session['score'] = user_score 
         context = {
-            'score': score,
+            'quiz_id': quiz_id,
+            'score': user_score,
         }
+
         return render(request, 'quiz/quiz_result.html', context)
     else:
-        return render(request, 'quiz/answer_form.html')
-    
-def calculate_score(request):
+        context = {
+            'quiz_id': quiz_id,
+        }
+        return render(request, 'quiz/answer_form.html', context)
+
+def calculate_score(request, quiz_id):
     score = 0
     for question in request.POST:
         if question.startswith('question_'):
@@ -73,28 +86,27 @@ def calculate_score(request):
             answer = Answer.objects.get(id=selected_answer_id)
             if answer.is_right:
                 score += 1
-    
+
     user = request.user
-    quiz_id = 1  # Пример ID викторины
-    
-    # Получение или создание экземпляра QuizAttempt
-    attempt, created = QuizAttempt.objects.get_or_create(user=user, quiz_id=quiz_id, defaults={'score': score})
-    
-    if not created:
-        # Обновление существующего экземпляра QuizAttempt
-        attempt.score = score
-        attempt.save()
-    
+
+    user_profile, created = UserProfile.objects.get_or_create(user=user)
+    user_profile.score += score
+    user_profile.save()
+
+    quiz = get_object_or_404(Quizzes, id=quiz_id)
+
+    attempt = QuizAttempt.objects.create(user=user, quiz=quiz, score=score)
+
     return score
 
-def result_view(request):
-    score = calculate_score(request)  
+def result_view(request, quiz_id):
+    score = calculate_score(request, quiz_id)  
 
     context = {
         'score': score,
     }
 
-    return render(request, 'quiz/quiz_result.html', context)
+    return render(request, 'quiz/result.html', context)
 
 def quiz_list(request):
     quizzes = Quizzes.objects.all()
@@ -199,23 +211,19 @@ def user_scores(request):
     return render(request, 'quiz/scores.html', context)
 
 def save_quiz_attempt(request, quiz_id, score):
-    # Получение данных пользователя
     user = request.user
 
-    # Получение объекта викторины по идентификатору (quiz_id)
     quiz = Quizzes.objects.get(id=quiz_id)
 
-    # Обновление общего счета пользователя
-    user.score += score
-    user.save()
-
-    # Проверка наличия объекта QuizAttempt для данной викторины и пользователя
     quiz_attempt, created = QuizAttempt.objects.get_or_create(user=user, quiz=quiz)
 
-    # Если объект QuizAttempt уже существует, обновляем его счет
     if not created:
         quiz_attempt.score += score
         quiz_attempt.save()
 
     return score
 
+def calculate_total_score(user_profile):
+    total_score = user_profile.score
+    user_profile.total_score = total_score
+    user_profile.save()

@@ -88,7 +88,8 @@ class QuizAttempt(models.Model):
     
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    score = models.IntegerField()
+    score = models.IntegerField(default=0)
+
 
     def __str__(self):
         return self.user.username

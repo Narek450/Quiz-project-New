@@ -10,20 +10,14 @@
       <thead>
         <tr>
           <th>Username</th>
-          <th>Score</th>
+          <th>Total Score</th>
         </tr>
       </thead>
       <tbody>
-        {% for user_profile in user_profiles %}
+        {% for user_profile in user_profiles|dictsortreversed:"score" %}
           <tr>
             <td>{{ user_profile.username }}</td>
-            <td>
-              {% for score in user_profile.scores_by_category %}
-                {{ score.total_score }}&nbsp;
-              {% empty %}
-                0
-              {% endfor %}
-            </td>
+            <td>{{ user_profile.score }}</td>
           </tr>
         {% endfor %}
       </tbody>

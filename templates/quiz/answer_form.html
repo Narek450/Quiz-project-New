@@ -1,7 +1,6 @@
-<form method="POST" action="{% url 'scores' %}">
+<form action="{% url 'quiz:submit_answer' quiz_id=quiz.id %}" method="post">
   {% csrf_token %}
-  
-  {{ form.as_p }}
-  
+  <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+  <!-- Остальные поля формы -->
   <button type="submit">Submit</button>
 </form>

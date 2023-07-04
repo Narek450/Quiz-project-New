@@ -9,7 +9,7 @@
     <body>
         <h1 class="quiz-title">{{ quiz.title|upper }}</h1>
 
-        <form method="POST" action="{% url 'quiz:submit-answer' %}">
+        <form method="POST" action="{% url 'quiz:submit-answer' quiz.id %}">
             {% csrf_token %}
 
             {% for question in questions %}
